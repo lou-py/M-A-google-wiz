@@ -1,0 +1,60 @@
+import pandas as pd
+
+# 1. Input Financials (in billions, shares in billions)
+
+acquirer = {
+    'Company': ['Google (Alphabet)'],
+    'Net_Income_B$': [59.97],
+    'Shares_Outstanding_B': [12.6]
+}
+target = {'Company': ['Wiz'], 'Net_Income_B$': [-0.05]}  # $50M net loss
+
+# Create DataFrames
+df_acq = pd.DataFrame(acquirer).set_index('Company')
+df_tar = pd.DataFrame(target).set_index('Company')
+
+# 2. Deal Assumptions
+
+deal_value_B = 10.0       # $10B purchase price
+acq_share_price = 130.0   # assumed Alphabet share price ($)
+
+# 3. Calculate new shares issued (in billions)
+
+new_shares_issued_B = deal_value_B / acq_share_price
+
+# 4. Standalone EPS
+
+eps_acq = df_acq.at['Google (Alphabet)', 'Net_Income_B$'] / df_acq.at['Google (Alphabet)', 'Shares_Outstanding_B']
+
+# 5. Pro-forma calculations
+
+combined_net_income_B = df_acq.at['Google (Alphabet)', 'Net_Income_B$'] + df_tar.at['Wiz', 'Net_Income_B$']
+pro_forma_shares_B = df_acq.at['Google (Alphabet)', 'Shares_Outstanding_B'] + new_shares_issued_B
+eps_pf = combined_net_income_B / pro_forma_shares_B
+
+# 6. Accretion/Dilution
+
+acc_dil_pct = (eps_pf / eps_acq - 1) * 100
+
+print("1. Standalone EPS (Google):")
+print(f"   EPS = Net Income / Shares Outstanding = 59.97 B$ / 12.6 B shares ≈ ${eps_acq:.4f}\n")
+
+print("2. New Shares Issued:")
+print(f"   = Deal Value / Share Price = 10 B$ / $130 ≈ {new_shares_issued_B:.5f} B shares\n")
+
+print("3. Pro-forma Net Income:")
+print(f"   = Google NI + Wiz NI = 59.97 B$ + (-0.05 B$) = {combined_net_income_B:.2f} B$\n")
+
+print("4. Pro-forma Shares Outstanding:")
+print(f"   = Google Shares + New Issued = 12.6 B + {new_shares_issued_B:.5f} B = {pro_forma_shares_B:.5f} B shares\n")
+
+print("5. Pro-forma EPS:")
+print(f"   = Pro-forma NI / Pro-forma Shares = {combined_net_income_B:.2f} B$ / {pro_forma_shares_B:.5f} B shares ≈ ${eps_pf:.4f}\n")
+
+print("6. Accretion/Dilution (%):")
+print(f"   = (Pro-forma EPS / Standalone EPS - 1) × 100 ≈ {acc_dil_pct:.4f}%\n")
+
+# Clarification of terms
+print("Terms clarification:")
+print("EPS (Earnings Per Share) measures net income allocated to each share.")
+print("Accretion: transaction increases EPS; Dilution: transaction decreases EPS.")
